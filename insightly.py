@@ -289,7 +289,14 @@ class Insightly():
         except:
             event = None
             print 'FAIL: addEvent()'
-            
+
+        # Test getEvent(), /v2.1/Events/{id}
+        try:
+            events = self.getEvent(event['EVENT_ID'])
+            print 'PASS: getEvent(), found event'
+        except:
+            print 'FAIL: getEvent()'
+
         # Test deleteEvent(), /v2.1/Events
         if event is not None:
             try:
@@ -452,6 +459,15 @@ class Insightly():
         except:
             print 'FAIL: getPipelines()'
             
+        # Test getPipeline(), /v2.1/Pipelines/{id}
+        try:
+            pipeline = self.getPipeline(pipelines[0]['PIPELINE_ID'])
+            print 'PASS: getPipeline(), found pipeline'
+        except:
+            print 'FAIL: getPipeline()'
+            import traceback, sys
+            traceback.print_exc(file=sys.stdout)
+
         try:
             stages = self.getPipelineStages()
             print 'PASS: getPipelineStages(), found ' + str(len(stages)) + ' pipeline stages'
@@ -840,7 +856,7 @@ class Insightly():
         """
         Returns the comments attached to an email, identified by its record locator id
         """
-        text = self.generateRequest('/v2.1/Emails/' + str(id) + '/Comments')
+        text = self.generateRequest('/v2.1/Emails/' + str(id) + '/Comments', 'GET', '')
         return self.dictToList(json.loads(text))
         
     def addCommentToEmail(self, id, body, owner_user_id):
@@ -909,7 +925,7 @@ class Insightly():
         
         Returns a dictionary
         """
-        text = self.generateRequest('/v2.1/Events/' + str(id))
+        text = self.generateRequest('/v2.1/Events/' + str(id), 'GET', '')
         json.loads(text)
     
     def addFileCategory(self, category, dummy=False):
@@ -1266,7 +1282,7 @@ class Insightly():
         """
         Gets details for a pipeline, identified by its unique record id
         """
-        text = self.generateRequest('/v2.1/Pipelines/' + str(id))
+        text = self.generateRequest('/v2.1/Pipelines/' + str(id), 'GET', '')
         return json.loads(text)
     
     #
