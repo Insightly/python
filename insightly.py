@@ -1528,7 +1528,7 @@ class Insightly():
         """
         Gets a list of team members, returns a list of dictionaries
         """
-        text = self.generateRequest('/v2.1/TeamMembers/teamid=' + str(id), 'GET', '')
+        text = self.generateRequest('/v2.1/TeamMembers?teamid=' + str(id), 'GET', '')
         return dictToList(json.loads(text))
     
     def getTeamMember(self, id):
