@@ -772,7 +772,7 @@ class Insightly():
         """
         # Do lazy exception handling, returns True if all goes well, otherwise raises whatever exception caused the issue
         text = self.generateRequest('/v2.1/Contacts/' + str(id), 'GET','')
-        json.loads(text)
+        return json.loads(text)
         
     def getContactEmails(self, id):
         """
