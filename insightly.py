@@ -1238,9 +1238,9 @@ class Insightly():
         if ids is not None:
             ids = string.replace(ids,' ','')
             if len(querystring) > 0:
-                querystring += '?ids=' + ids
-            else:
                 querystring += '&ids=' + ids
+            else:
+                querystring += '?ids=' + ids
         querystring = self.ODataQuery(querystring, top=top, skip=skip, orderby=orderby, filters=filters)
         text = self.generateRequest('/v2.1/Organisations' + querystring, 'GET', '')
         return self.dictToList(json.loads(text))
