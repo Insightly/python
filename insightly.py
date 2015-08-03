@@ -592,6 +592,7 @@ class Insightly():
             raise Exception('parameter method must be GET|DELETE|PUT|UPDATE')
         # generate full URL from base url and relative url
         full_url = self.baseurl + url
+        full_url = urllib.quote(full_url, '/:?$=&%\'')
         
         request = urllib2.Request(full_url)
         if alt_auth is not None:
