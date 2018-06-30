@@ -25,7 +25,7 @@ try:
 except ImportError:
     import urllib2
     from urllib import urlencode
-    
+
 def lowercase(text):
     try:
         lc = text.lower()
@@ -69,141 +69,141 @@ class Insightly():
     """
     Insightly Python library for Insightly API v2.2
     Brian McConnell <brian@insight.ly>
-   
+
     This library provides user friendly access to the versions 2.2 of the REST API for Insightly. The library provides several services, including:
-   
+
     * HTTPS request generation
     * Data type validation
-   
+
     The library is built using Python standard libraries (no third party tools required, so it will run out of the box on most Python
     environments, including Google App Engine). The wrapper functions return native Python objects, typically dictionaries, or lists of
     dictionaries, so working with them is easily done using built in functions.
-    
+
     The version 2.2 API adds several new endpoints which make it easy to make incremental changes to existing Insightly objects, such
     as to add a phone number to a contact, and also more closely mirrors the functionality available in the web app (such as the
     ability to follow and unfollow objects.s)
-    
+
     API DOCUMENTATION
-    
+
     Full API documentation and an interactive sandbox is available at https://api.insight.ly/v2.2/Help
-    
+
     IMPORTANT NOTE
-    
+
     This version of the client library is not backward compatible with the previous version. In order to simplify the code base, and
     enable better test coverage, this library is organized around a small number of general purpose methods that implement create,
     read, update and delete functionality generically. The previous version of the library has one method per endpoint, per HTTP method,
     which grew unwieldy with the addition of many new endpoints in v2.1
-    
+
     INSTALLATION
-    
+
     Just copy the files in this project into your working directory, if you don't plan to run test suites, you only need the insightly.py
     file. insightlytest.py and apollo17.jpg are used for testing. The file insightlyexamples.py will be used to highlight short examples
-    of simple integrations. 
-   
+    of simple integrations.
+
     USAGE
-    
+
     If you are working with very large recordsets, you should use ODATA filters to access data in smaller chunks. This is a good idea in
     general to minimize server response times. This is no longer an issue with version 2.2, which returns paginated results that you
     can page through using the optional top and skip parameters.
-   
+
     BASIC USE PATTERNS:
-    
+
     i = Insightly(apikey = 'foozlebarzle', version=2.1)
     projects = i.read('projects', top=50, filters={'email':'foo@bar.com'})
     print 'Found ' + str(len(projects)) + ' projects'
-    
+
     The create() function enables you to create an Insightly object, call it as follows:
         object_graph = i.create(endpoint, object_graph)
         where object graph is a dictionary
         for example:
-        
+
         contact = i.create('contacts',{'FIRST_NAME':'Foo','LAST_NAME':'Bar'})
-    
+
     The create_child() function enables you to add a child object, for example to add an address to a contact, use it as follows:
         object_graph = i.create_child(endpoint, object_graph)
         for example:
-        
+
         address = i.create_child('contacts',contact_id,'addresses',{'CITY':'San Francisco','STATE':'CA','ADDRESS_TYPE':'Home'})
 
     The delete() function enables you to delete Insightly objects and child objects, use it as follows:
         success = i.delete('contacts', contact_id)
         success = i.delete('contacts', contact_id, sub_type='addresses', sub_type_id=address_id)
-        
+
     The get() function returns a single Python dictionary or None for a specific identified record. Use as follows:
         contact = i.get('contacts', contact_id)
 
     The read() function enables you to get/find Insightly objects, with optional pagination and search terms, use as follows:
         contacts = i.read('contacts')
         contacts = i.read('contacts', top=100, skip=500) # get 100 records after skipping 500
-    
+
     The search() function is used to do server filtered searches, use as follows:
         contacts = i.search('contacts', 'email=foo.com', top=100, skip=200)
-    
+
     The update() function enables you to update an existing Insightly object, use this as follows:
         project = i.update('projects', project)        # where project is a dictionary containing the object graph
-    
+
     The upload() function enables you to upload a file to endpoints that accept file attachments, use this as follows:
         upload('opportunities', opportunity_id, 'apollo17.jpg')
-    
+
     The upload_image() function enables you to upload an image for a contact, organization, project or opportunity
         upload('contacts', contact_id, 'apollo17.jpg')
-        
+
     ENDPOINTS
-    
+
     The helper functions work with all endpoints in the API documentation. For example, to get a list of pipelines, you'd call
-    
+
     pipelines = i.read('pipelines')
-    
+
     See insightlytest.py for examples of how the endpoints are called (the automated test suite covers nearly all endpoints in the API)
 
     AUTOMATED TEST SUITE
-    
+
     The library includes a comprehensive automated test suite, which can be found in insightlytest.py
-    
+
     To run a test suite, using the following code:
-    
+
         from insightlytest import test
         test()
-    
+
     The program will test most API endpoints with sample data and report results to the console, as well as write
     them out to the file testresults.txt
-    
+
     INTERACTIVE DOCUMENTATION
-    
+
     Use Python's built in help() function to pull up documentation for individual methods.
-    
+
     For API documentation and interactive sandbox, go to https://api.insight.ly/v2.2/Help
-    
+
     TROUBLESHOOTING TIPS
-    
+
     One of the main issues API users run into during write/update operations is a 400 error (bad request) due to missing required fields.
     If you are unclear about what the server is expecting, a good way to troubleshoot this is to do the following:
-    
+
     * Using the web interface, create the object in question (contact, project, team, etc), and add sample data and child elements to it
     * Use the corresponding read() method to get this object
     * Inspect the object's contents and structure (it will be returned as a Python dictionary)
-    
+
     If you get stuck, we highly recommend downloading the Postman extension for Chrome. You can use it to manually generate requests
     and view the server response. It is very helpful in troubleshooting REST API integrations with systems like ours.
-    
+
     Read operations via the API are generally quite straightforward, so if you get struck on a write operation, this is a good workaround,
     as you are probably just missing a required field or using an invalid element ID when referring to something such as a link to a contact.
-    
+
     """
     def __init__(self, apikey='', version='2.2', dev=None, gzip=True, debug=False, test=False, offline=False, refresh=False):
-        
+
         """
         Instantiates the class, logs in, and fetches the current list of users. Also identifies the account owner's user ID, which
         is a required field for some actions. This is stored in the property Insightly.owner_id
-        
+
         gzip compression is enabled by default, the client library will try to decompress return results, with fallback to plaintext
         if the server is ignoring compression requests (this reduces payload size by about 10:1 when active)
 
         Raises an exception if login or call to getUsers() fails, most likely due to an invalid or missing API key
-        
+
         To enable offline data processing, set offline=True, and if you want to update the local data store, set refresh=True
         """
-        
+
         if True == debug or True == test:
             self.log_file = open(str(version) + '.txt','w')
         else:
@@ -212,7 +212,7 @@ class Insightly():
         #
         # Define properties to store locally cached objects, when offline mode is enabled
         #
-        
+
         self.activity_sets = list()
         self.contacts = list()
         self.countries = list()
@@ -237,7 +237,7 @@ class Insightly():
         self.tasks = list()
         self.task_categories = list()
         self.teams = list()
-        
+
         self.debug = debug
         if gzip:
             self.gzip = True
@@ -247,7 +247,7 @@ class Insightly():
             self.test = True
         else:
             self.test = False
-        
+
         self.version = str(version)
         if dev is not None:
             self.domain = dev
@@ -300,7 +300,7 @@ class Insightly():
                 # add more object types once contacts are debugged
         else:
             raise Exception('Python library only supports v2.1 or v2.2 APIs. We recommend using v2.2.')
-        
+
     def check_difference(self, new, old):
         """
         This function checks to see if the list of keys in a new object graph differs
@@ -320,19 +320,19 @@ class Insightly():
                 self.printline('    RECVD:  ' + str(new))
             return diff_keys
         return []
-    
+
     def create(self, object_type, object_graph, id = None, sub_type = None):
         """
         This is a general purpose write method that can be used to create (POST)
         Insightly objects.
-        
+
         USAGE:
-        
+
         i = Insightly()
         new_lead = {'first_name':'foo','last_name':'bar'}
         lead = i.create('leads',new_lead)
         print str(lead)
-        
+
         """
         test = self.test
         object_type = lowercase(object_type)
@@ -381,13 +381,13 @@ class Insightly():
                 return data
         else:
             raise Exception('object_graph must be a Python dictionary')
-        
+
     def create_child(self, object_type, id, sub_type, object_graph):
         """
         This method is used to append a child element, such as a link, to an existing object
-        
+
         USAGE:
-        
+
         i = Insightly()
         link = {'LEAD_ID':lead_id,'TASK_ID':task_id}
         i.create_child('tasks', task_id, 'tasklinks', link)
@@ -426,18 +426,18 @@ class Insightly():
                 return data
         else:
             raise Exception('object graph must be a Python dictionary')
-        
+
     def cruds(self, object_type, object_id, object_graph, repetitions=10, file_handle=None):
         """
         This is a test method which goes through the create, update, read, delete cycle for
         an object. It repeats the process N times, and logs the average response time for
-        each endpoint. 
+        each endpoint.
         """
         r = 0
         timer = dict()
-        
+
         print('TESTING ' + object_type + ' v' + self.version)
-        
+
         while r < repetitions:
             # test read method
             st = datetime.datetime.now()
@@ -450,7 +450,7 @@ class Insightly():
             et = datetime.datetime.now()
             td = et - st
             timer['read'] = timer.get('read',0.0) + td.total_seconds()
-            
+
             st = datetime.datetime.now()
             self.tests_run += 1
             try:
@@ -483,23 +483,23 @@ class Insightly():
             et = datetime.datetime.now()
             td = et - st
             timer['delete'] = timer.get('delete', 0.0) + td.total_seconds()
-            
+
             r += 1
-        
+
         tkeys = timer.keys()
         for k in tkeys:
             timer[k] = timer[k] / float(repetitions)
             if file_handle is not None:
                 line = '"' + str(self.version) + '","' + object_type + '","' + k + '","' + str(timer[k]) + '"\n'
                 file_handle.write(line)
-        
+
     def delete(self, object_type, id, sub_type=None, sub_type_id = None):
         """
         This is a general purpose delete method that will allow the user to delete Insightly
         objects (e.g. contacts) and sub_objects (e.g. delete a contact_info linked to an object)
-        
+
         USAGE:
-        
+
         i = Insightly()
         lead_id = 123456
         success = i.delete('leads', lead_id)
@@ -544,12 +544,12 @@ class Insightly():
         else:
             text = self.generateRequest(url, 'DELETE', '')
             return True
-        
+
     def dictToList(self, data):
         """
         This helper function checks to see if the returned data is a list or a lone dict, string, int or float.
         If it is a lone item, it is appended to a list.
-        
+
         Use case: a function may return a list of dictionaries, or a single dictionary, or a nullset. This function
         standardizes this to a list of dictionaries, or in the case of a null set, an empty list.
         """
@@ -563,12 +563,12 @@ class Insightly():
             return
         else:
             return list()
-        
+
     def findUser(self, email):
         """
         Client side function to quickly look up Insightly users by email. Returns a dictionary containing
         user details or None if not found. This is useful when you need to find the user ID for someone but
-        only know their email addresses, for example when creating and assigning a new project or task. 
+        only know their email addresses, for example when creating and assigning a new project or task.
         """
         for u in self.users:
             if u.get('EMAIL_ADDRESS','') == email:
@@ -632,7 +632,7 @@ class Insightly():
             return result.info().headers
         else:
             return text
-        
+
     def get(self, object_type, id, sub_type=None, test=False):
         """
         Returns a single Insightly object, for example to call /contacts/{id} to get a single
@@ -679,7 +679,7 @@ class Insightly():
             except:
                 results = json.loads(text.decode('utf-8'))
             return results
-        
+
     def get_all(self, object_type, updated_after_utc='', ids_only=True):
         """
         Iterates through the entire recordset for an object type, optionally filtered by updated_after_utc,
@@ -733,36 +733,37 @@ class Insightly():
             return results
         else:
             raise Exception('get_all() is only supported for version 2.2 and mobile APIs')
-    
+
     def getMethods(self, test=False):
         """
         Returns a list of the callable methods in this library.
         """
         methods = [method for method in dir(self) if callable(getattr(self, method))]
         return methods
-    
+
     def load(self, object_type, refresh=False):
         """
         Loads objects into memory, either from a local file (JSON) or reloads all objects from
         the Insightly server, to allow offline processing.
-        
+
         # TODO: add logic to do partial updates using the most recent date_updated_utc timestamp
         """
+        DATA_DIR = 'insightly_data'
         if refresh:
             records = self.get_all(object_type, ids_only = False)
             try:
-                os.mkdir('insightly_data')
+                os.mkdir()
             except:
                 pass
-            f = open('insightly_data/' + object_type + '.json', 'w')
+            f = open(DATA_DIR + '/' + object_type + '.json', 'w')
             f.write(json.dumps(records))
             f.close()
         else:
-            f = open(object_type + '.json', 'r')
+            f = open(DATA_DIR + '/' + object_type + '.json', 'r')
             records = json.loads(f.read())
             f.close()
         return records
-    
+
     def log(self, success, url, method, duration):
         if self.log_file is not None:
             f = self.log_file
@@ -771,12 +772,12 @@ class Insightly():
             else:
                 success = 'FAIL'
             f.write('"' + success + '","' + url + '","' + method + '","' + duration + '"\n')
-        
+
     def ODataQuery(self, querystring, top=None, skip=None, orderby=None, filters=None):
         """
         This helper function generates an OData compatible query string. It is used by many
         of the search functions to enable users to filter, page and order recordsets.
-        
+
         NOTE: version 2.2 does not support OData, but does support optional querystring
         parameters. This function will generate the correct query string depending on the
         API version to preserve backward compatibility. Version 2.2 also limits you to
@@ -784,7 +785,7 @@ class Insightly():
         query performance. The orderby option is no longer supported in version 2.2.
         You can do a wildcard search by prepending or appending a % sign to a filter,
         for example, phone = %4155551212 will match for 14155551212 and +14155551212.
-        
+
         See the version 2.2 API documentation for a list of optional parameters that are
         currently supported by each API endpoint.
         """
@@ -844,34 +845,34 @@ class Insightly():
         """
         This function is used to query the offline data store (if you instantiate the Insightly class with offline=True, it will
         download a copy of all Insightly objects and cache them in memory)
-        
+
         It is called as follows:
         offline_query(object_type, filters)
-        
+
         Example:
-        
+
         i = Insightly(offline=True)
         records = i.offline_query('contacts',[('FIRST_NAME','contains','foo'),('LAST_NAME','contains','bar')])
         for r in records:
             do_something_with(r)
-        
+
         Note:
-        
+
         Filter expressions are tuples in the form (parm, operator, value)
-        
+
         The following operators are recognized:
-        
+
         = : parm=value
         contains : parm contains value
         < : less than
         > : greater than
-        
+
         You can pass in a single filter, or a list of multiple filters
-        
+
         You can also search to see if any field in a record contains a string with the filter expression:
-        
+
         ('any','contains','foo')
-        
+
         """
         if type(object_type) is str:
             object_type = lowercase(object_type)
@@ -891,7 +892,7 @@ class Insightly():
                     raise Exception('all filter expressions must be a tuple in (parm, operator, value) form')
         else:
             raise Exception('filters should be passed in either as a tuple in (parm, operator, value) form, or list of tuples')
-        
+
         if object_type == 'contacts' or object_type == 'contact':
             data = self.contacts
         elif object_type == 'events' or object_type == 'event':
@@ -908,7 +909,7 @@ class Insightly():
             data = self.tasks
         else:
             raise Exception('Invalid object type')
-        
+
         results = list()
         for d in data:
             matches = 0
@@ -916,7 +917,7 @@ class Insightly():
                 parm = f[0]
                 operator = f[1]
                 value = f[2]
-                
+
                 if lowercase(parm) == 'any':
                     field = str(d)
                 else:
@@ -939,7 +940,7 @@ class Insightly():
             if matches == len(filters):
                 results.append(d)
         return results
-        
+
     def ownerinfo(self):
         """
         :return: dictionary of information about the account owner
@@ -950,34 +951,34 @@ class Insightly():
             'contact_id': self.contact_id,
             'email_dropbox': self.email_dropbox,
         }
-            
+
     def printline(self, text):
         if lowercase(text).count('fail') > 0:
             self.test_failures.append(text)
         if self.debug:        print(text)
         if self.test:         self.filehandle.write(text + '\n')
-        
+
     def read(self, object_type, id = None, sub_type=None, top=None, skip=None, orderby=None, filters=None):
         """
         This is a general purpose read method that will allow the user to easily fetch Insightly objects.
         This will replace the hand built request handlers, which are too numerous to test and support
         adequately.
-        
+
         USAGE:
-        
+
         i = Insightly(version=2.2, apikey='foozlebarzle')
         projects = i.read('projects', filters{'status':'in progress'})
         for p in projects:
             print str(p)
-            
+
         NOTE:
-        
+
         The orderby parameter is no longer supported in version 2.2. If you need to search for records newer than
         a certain date/time, use the filter updated_after_utc
-        
+
         If an optional query parameter is provided in filters (should be a dictionary), this function will query
         /{object_type}/search
-        
+
         """
         test = self.test
         if top is not None or skip is not None or orderby is not None or filters is not None:
@@ -1034,7 +1035,7 @@ class Insightly():
             except:
                 results = self.dictToList(json.loads(text.decode('utf-8')))
             return results
-        
+
     def record_count(self, object_type, id=None, sub_type=None):
         if object_type == 'comments':
             record_id = 'COMMENT_ID'
@@ -1090,19 +1091,19 @@ class Insightly():
                 self.printline('FOUND ' + str(records_found) + ' of ' + str(num_records) + ' expected ' + object_type)
             else:
                 return
-        
+
     def search(self, object_type, expression, top=100, skip=0, expect=0):
         """
         This implements an easier to use search function, where before we
         used optional parameters for the read function. This is still supported
         but users are encouraged to use this function instead.
-        
+
         USAGE
-        
+
         contacts = i.search('contacts', 'email=foo@bar.com', top=100, filters={'OWNER_USER_ID':'foo'})
-        
+
         PARAMETERS
-        
+
         expression : a parm=value pair for an allowed server side filter (e.g. phone=415551212)
         top : return the first N entries
         skip : skip N entries (for pagination)
@@ -1169,7 +1170,7 @@ class Insightly():
             except:
                 results = self.dictToList(json.loads(text.decode('utf-8')))
             return results
-        
+
     def stats(self):
         """
         Returns current record counts (for offline mode)
@@ -1197,19 +1198,19 @@ class Insightly():
             task_categories = len(self.task_categories),
             teams = len(self.teams),
         )
-        
+
     def sync(self, refresh=False):
         """
         Does a one-way sync (from Insightly to locale file system) to update the local object store.
         This function creates a JSON file for each object type, which is then used for local filter
         and query operations.
-        
+
         TODO: add incremental update using last update timestamp, but for now just load everything
         """
         #
         # First sync contacts
         #
-        
+
         self.activity_sets = self.load('activitysets', refresh)
         self.contacts = self.load('contacts', refresh)
         self.emails = self.load('emails', refresh)
@@ -1231,16 +1232,16 @@ class Insightly():
         self.tasks = self.load('tasks', refresh)
         self.task_categories = self.load('taskcategories', refresh)
         self.teams = self.load('teams', refresh)
-        
+
         return True
-        
+
     def update(self, object_type, object_graph, id = None, sub_type = None):
         """
         This is a general purpose write method that can be used to update (PUT)
         Insightly objects.
-        
+
         USAGE:
-        
+
         i = Insightly()
         lead_id = 123456
         lead = i.read('leads', lead_id)
@@ -1278,7 +1279,7 @@ class Insightly():
                 self.tests_run += 1
                 try:
                     try:
-                        text = self.generateRequest(url, 'PUT', data).decode()    
+                        text = self.generateRequest(url, 'PUT', data).decode()
                     except:
                         text = self.generateRequest(url, 'PUT', data)
                     end_time = datetime.datetime.now()
@@ -1307,14 +1308,14 @@ class Insightly():
                     self.printline(    'TRACE: ' + traceback.format_exc())
             else:
                 try:
-                    text = self.generateRequest(url, 'PUT', data).decode()    
+                    text = self.generateRequest(url, 'PUT', data).decode()
                 except:
                     text = self.generateRequest(url, 'PUT', data)
                 data = json.loads(text)
                 return data
         else:
             raise Exception('object_graph must be a Python dictionary')
-        
+
     def upload(self, object_type, id, filename):
         start_time = datetime.datetime.now()
         test = self.test
@@ -1352,7 +1353,7 @@ class Insightly():
             except:
                 text = self.generateRequest(url, 'POST', body, headers=headers)
             return json.loads(text)
-    
+
     def upload_image(self, object_type, id, filename):
         start_time = datetime.datetime.now()
         test = self.test
@@ -1379,7 +1380,7 @@ class Insightly():
                 self.printline(    'TRACE: ' + traceback.format_exc())
         else:
             return self.generateRequest(url, 'PUT', value)
-        
+
     def encode_multipart_formdata(self, files):
         #
         # NOTE: file attachment uploads do not currently work for Python 3.x, working on this issue
@@ -1403,6 +1404,6 @@ class Insightly():
         body = L
         content_type = 'multipart/form-data; boundary=%s' % LIMIT
         return content_type, body
-    
+
     def get_content_type(self,filename):
         return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
