@@ -752,7 +752,7 @@ class Insightly():
         if refresh:
             records = self.get_all(object_type, ids_only = False)
             try:
-                os.mkdir()
+                os.mkdir(DATA_DIR)
             except:
                 pass
             f = open(DATA_DIR + '/' + object_type + '.json', 'w')
